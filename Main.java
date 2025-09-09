@@ -11,7 +11,8 @@ class Reservation {
     private LocalDate startDate;
     private LocalDate endDate;
     private ReserverPayer reserverPayer; 
-    private Room allocatedRoom;       
+    private Room allocatedRoom;  
+    private boolean cancelled;   
 
     public Reservation(int number,LocalDate startDate,LocalDate endDate,ReserverPayer reserverPayer,Room allocatedRoom) {
         // making condition if no: in negative so throw exception /using defensive programing approach
@@ -26,24 +27,19 @@ class Reservation {
         this.endDate = endDate;
         this.reserverPayer = reserverPayer;
         this.allocatedRoom = allocatedRoom;
+        this.cancelled = false;  
     }
 
-    public int getNumber() {
-         return number;
-     }
-    public LocalDate getStartDate() { 
-        return startDate;
-     }
-    public LocalDate getEndDate() { 
-        return endDate;
-     }
-    public ReserverPayer getReserverPayer() { 
-       return reserverPayer; 
-    }
-    public Room getAllocatedRoom() { 
-        return allocatedRoom; 
-    }
+    public int getNumber() { return number; }
+    public LocalDate getStartDate() { return startDate; }
+    public LocalDate getEndDate() { return endDate; }
+    public ReserverPayer getReserverPayer() { return reserverPayer; }
+    public Room getAllocatedRoom() { return allocatedRoom; }
+
+    public boolean isCancelled() { return cancelled; }  
+    public void setCancelled(boolean cancelled) { this.cancelled = cancelled; } 
 }
+
 //    Class Reserver Payer
 class ReserverPayer {
      private Map<Integer, Reservation> myReservations = new HashMap<>();
@@ -76,11 +72,10 @@ class Room {
         this.number = number;
     }
 
-    public int getNumber() {
-         return number; 
-        }
+    public int getNumber() { return number; }
 
-    public void allocate(Reservation r) {
+    
+    public void allocateRoom(Reservation r) {
         if (r != null){
              roomReservations.add(r);
     }
@@ -93,13 +88,15 @@ class Room {
     }
 }
 }
+
 // Guest House Class
 class GuestHouse {
 
     // All reservations known to this guest house, by reservation number.
    private Map<Integer, Reservation> reservations = new HashMap<>();
 
-    public void addReservation(Reservation r) {
+    
+    public void createReservation(Reservation r) {
         if (r != null) {
             reservations.put(r.getNumber(), r);
         }
@@ -132,8 +129,10 @@ class GuestHouse {
         // Step 3: Remove from guest house map
         reservations.remove(reservationNumber);
 
-        // Step 4: Build feedback text
-        String feedback = "Reservation "+reservationNumber + " cancelled.";
+        // Step 4: mark reservation cancelled
+        reservation.setCancelled(true);
+
+        String feedback = "Reservation " + reservationNumber + " cancelled successfully.";
         if (room != null) {
             feedback += " Room " + room.getNumber() + " deallocated.";
         }
@@ -142,13 +141,11 @@ class GuestHouse {
     }
 }
 
-
 //Main class to check the output and defensive program handling
 class Main {
     public static void main(String[] args) {
         // Creating the guest house object gh 
         GuestHouse gh = new GuestHouse();
-
 
         // Creating  a reserver payer rp1 and rp2
         ReserverPayer rp1 = new ReserverPayer();
@@ -156,7 +153,7 @@ class Main {
 
         // Create rooms 804 and 007 
         Room room804 = new Room(804);
-        Room room007 = new Room(007);
+        Room room007 = new Room(7); 
 
         // Creating reservations for r1 r2 and r3
         Reservation r1 = new Reservation(1,java.time.LocalDate.of(2025, 1, 10),java.time.LocalDate.of(2025, 1, 12),rp1,room804);
@@ -166,17 +163,17 @@ class Main {
         Reservation r3 = new Reservation(3,java.time.LocalDate.of(2025, 3, 1),java.time.LocalDate.of(2025, 3,3),rp2,room804);
 
         // Add reservations into guest house, reserver, and rooms
-        gh.addReservation(r1);
+        gh.createReservation(r1);   
         rp1.addReservation(r1);
-        room804.allocate(r1);
+        room804.allocateRoom(r1);   
 
-        gh.addReservation(r2);
+        gh.createReservation(r2);
         rp1.addReservation(r2);
-        room007.allocate(r2);
+        room007.allocateRoom(r2);
 
-        gh.addReservation(r3);
+        gh.createReservation(r3);
         rp2.addReservation(r3);
-        room804.allocate(r3);
+        room804.allocateRoom(r3);
 
         // Now cancel them which one you want here i am canclling 1,2,3 one  by one
         System.out.println(gh.cancelReservation(1)); 
@@ -187,4 +184,3 @@ class Main {
         System.out.println(gh.cancelReservation(4));
     }
 }
-
